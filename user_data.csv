@@ -1,0 +1,5 @@
+name,age,medical_history,medical_details,diagnosed,diagnosed_stage,diagnosed_report,cbc_report,mammogram,ultrasound,mri,biopsy,genetic_testing,last_screening,screening_frequency
+aditi,58,Yes,hypertension,Yes,2b,C:\fakepath\hsvp-lor.pdf,C:\fakepath\hsvp-lor.pdf,C:\fakepath\hsvp-lor.pdf,C:\fakepath\hsvp-lor.pdf,C:\fakepath\document (9).pdf,C:\fakepath\document (9).pdf,C:\fakepath\document (9).pdf,,
+Abhinav,21,No,,No,,,,,,,,,a month ago,Annually
+Abhinav,21,No,,No,,,,,,,,,last month,Annually
+aditi,58,Yes,"hypertension, diabetes",Yes,2b,C:\fakepath\document (10).pdf,C:\fakepath\document (7).pdf,C:\fakepath\document (7).pdf,C:\fakepath\document (9).pdf,C:\fakepath\document (10).pdf,C:\fakepath\document (9).pdf,C:\fakepath\document (8).pdf,,

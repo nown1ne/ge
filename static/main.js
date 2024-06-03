@@ -20,16 +20,6 @@ $(document).ready(function () {
           response.options.forEach((option) => {
             questionHtml += `<label><input type="radio" name="${response.key}" value="${option}"> ${option}</label><br>`;
           });
-        } else if (
-          response.key === "diagnosed_report" ||
-          response.key === "cbc_report" ||
-          response.key === "mammogram" ||
-          response.key === "ultrasound" ||
-          response.key === "mri" ||
-          response.key === "biopsy" ||
-          response.key === "genetic_testing"
-        ) {
-          questionHtml += `<input type="file" name="${response.key}">`;
         } else {
           questionHtml += `<input type="text" name="${response.key}">`;
         }

@@ -1,6 +1,12 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import os
+from supabase import create_client, Client
+
+SUPABASE_URL = 'https://zqxdgopzsaoyhctnghaa.supabase.co'
+SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeGRnb3B6c2FveWhjdG5naGFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY1NjkzNDEsImV4cCI6MjAzMjE0NTM0MX0.2kOPWjNeeEQQyXzfC_ORHOV1UZMoNXJg5pYOPoKlUgM'
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
 DATA_FILE = 'user_data.csv'
@@ -49,17 +55,29 @@ def get_next_question(answers):
         if "last_screening" in answers and "screening_frequency" not in answers:
             return {"question": "How frequently do you get screened?", "options": ["Annually", "Every 2 years", "Every 5 years", "Never"], "key": "screening_frequency"}
 
-    save_to_csv(answers)
+    save_to_supabase(answers)
     return {"question": "Thank you for completing the survey!", "options": [], "key": None}
 
-def save_to_csv(data):
-    new_data = pd.DataFrame([data])
-    if not os.path.isfile(DATA_FILE):
-        new_data.to_csv(DATA_FILE, index=False)
-    else:
-        existing_data = pd.read_csv(DATA_FILE)
-        updated_data = pd.concat([existing_data, new_data], ignore_index=True)
-        updated_data.to_csv(DATA_FILE, index=False)
+def save_to_supabase(data):
+    data = {
+        "user_id": "32223c22-956c-446f-84db-6895775ae1fa",
+        "name": data.get("name"),
+        "age": data.get("age"),
+        "medical_history": data.get("medical_details", ""),
+        "diagnosed": data.get("diagnosed"),
+        "diagnosed_stage": data.get("diagnosed_stage"),
+        "diagnosed_report": data.get("diagnosed_report"),
+        "cbc_report": data.get("cbc_report"),
+        "mammogram": data.get("mammogram"),
+        "ultrasound": data.get("ultrasound"),
+        "mri": data.get("mri"),
+        "biopsy": data.get("biopsy"),
+        "genetic_testing": data.get("genetic_testing"),
+        "last_screening": data.get("last_screening"),
+        "screening_frequency": data.get("screening_frequency"),
+    }
+
+    supabase.table("survey_responses").insert(data).execute()
 
 if __name__ == '__main__':
     app.run(debug=True)

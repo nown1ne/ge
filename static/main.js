@@ -10,6 +10,7 @@ $(document).ready(function () {
       success: function (response) {
         if (response.key === null) {
           $("#submit-btn").show();
+          save_to_supabase(answers, userId);
           return;
         }
 
@@ -60,3 +61,70 @@ $(document).ready(function () {
 
   loadNextQuestion(); // Initial load
 });
+
+function showLoginModal() {
+    const modal = document.getElementById('loginModal');
+    modal.style.display = 'block';
+  }
+  
+  function showSignupModal() {
+    const modal = document.getElementById('signupModal');
+    modal.style.display = 'block';
+  }
+  
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'none';
+  }
+  
+  function login() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+  
+    const data = { email, password, action: 'login' };
+  
+    $.ajax({
+      url: '/authenticate',
+      method: 'POST',
+      data: JSON.stringify(data),
+      contentType: 'application/json',
+      success: function(response) {
+        if (response.success) {
+          userId = response.user_id;
+          closeModal('loginModal');
+          loadNextQuestion();
+        } else {
+          alert(response.error);
+        }
+      },
+      error: function() {
+        alert('An error occurred during login.');
+      }
+    });
+  }
+  
+  function signup() {
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+  
+    const data = { email, password, action: 'signup' };
+  
+    $.ajax({
+      url: '/authenticate',
+      method: 'POST',
+      data: JSON.stringify(data),
+      contentType: 'application/json',
+      success: function(response) {
+        if (response.success) {
+          userId = response.user_id;
+          closeModal('signupModal');
+          loadNextQuestion();
+        } else {
+          alert(response.error);
+        }
+      },
+      error: function() {
+        alert('An error occurred during signup.');
+      }
+    });
+  }

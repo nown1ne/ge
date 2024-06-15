@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, jsonify
-import pandas as pd
 import os
 from supabase import create_client, Client
 
@@ -10,6 +9,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
 DATA_FILE = 'user_data.csv'
+
 
 @app.route('/')
 def index():
@@ -58,9 +58,9 @@ def get_next_question(answers):
     save_to_supabase(answers)
     return {"question": "Thank you for completing the survey!", "options": [], "key": None}
 
-def save_to_supabase(data):
+def save_to_supabase(data,user_id):
     data = {
-        "user_id": "32223c22-956c-446f-84db-6895775ae1fa",
+        "user_id": user_id,
         "name": data.get("name"),
         "age": data.get("age"),
         "medical_history": data.get("medical_details", ""),
@@ -78,6 +78,31 @@ def save_to_supabase(data):
     }
 
     supabase.table("survey_responses").insert(data).execute()
+
+@app.route('/authenticate', methods=['POST'])
+def authenticate():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    action = data.get('action')
+
+    if action == 'login':
+        user = supabase.auth.sign_in_with_otp({"email": email})
+        if user.user:
+            return jsonify({'success': True, 'user_id': str(user.user.id)})
+        else:
+            return jsonify({'success': False, 'error': 'Incorrect email or password.'}), 401
+
+    elif action == 'signup':
+        user = supabase.auth.sign_up(email, password)
+        
+        if user.user:
+            return jsonify({'success': True, 'user_id': str(user.user.id)})
+        else:
+            return jsonify({'success': False, 'error': 'Error creating account.'}), 500
+
+    return jsonify({'success': False, 'error': 'Invalid action.'}), 400
+
 
 if __name__ == '__main__':
     app.run(debug=True)

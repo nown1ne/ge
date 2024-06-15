@@ -62,11 +62,40 @@
   </head>
   <body>
     <h1>Breast Cancer Awareness Onboarding</h1>
-    <form id="questionnaire-form" enctype="multipart/form-data">
+    <div>
+      <button onclick="showLoginModal()">Login</button>
+      <button onclick="showSignupModal()">Sign Up</button>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('loginModal')">&times;</span>
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+      </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('signupModal')">&times;</span>
+        <h2>Sign Up</h2>
+        <input type="email" id="signupEmail" placeholder="Email" required>
+        <input type="password" id="signupPassword" placeholder="Password" required>
+        <button onclick="signup()">Sign Up</button>
+      </div>
+    </div>
+
+    <form id="questionnaire-form">
       <div id="questions-container"></div>
       <button type="submit" id="submit-btn" style="display: none">
         Submit
       </button>
     </form>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
   </body>
 </html>

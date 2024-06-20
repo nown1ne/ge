@@ -1,4 +1,3 @@
 flask 
 supabase
-google.generativeai
 requests

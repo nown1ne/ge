@@ -1,19 +1,21 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import os
 from supabase import create_client, Client
 import requests
-import google.generativeai as genai
-from dotenv import load_dotenv
+# import google.generativeai as genai
 
-genai.configure(api_key=os.environ["API_KEY"])
+# genai.configure(api_key=os.environ["API_KEY"])
 
 SUPABASE_URL = 'https://zqxdgopzsaoyhctnghaa.supabase.co'
 SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeGRnb3B6c2FveWhjdG5naGFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY1NjkzNDEsImV4cCI6MjAzMjE0NTM0MX0.2kOPWjNeeEQQyXzfC_ORHOV1UZMoNXJg5pYOPoKlUgM'
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 app = Flask(__name__)
+app.secret_key = 'teribkc69'
 
 @app.route('/')
 def index():
+    user_id = request.args.get('user_id')
+    session['user_id'] = user_id 
     return render_template('index.html')
 
 @app.route('/next_question', methods=['POST'])
@@ -81,8 +83,9 @@ def get_next_question(answers):
     return {"question": "Thank you for completing the survey!", "options": [], "key": None}
 
 def save_to_supabase(answers):
+    userId = session.get('user_id')
     data = {
-    "user_id": "32223c22-956c-446f-84db-6895775ae1fa",
+    "user_id": userId ,
     "name": answers.get("name"),
     "age": answers.get("age"),
     "gender": answers.get("gender"),
@@ -111,70 +114,71 @@ def save_to_supabase(answers):
 }
 
     supabase.table('survey').insert(data).execute()
-@app.route('/submit_answers', methods=['POST'])
-def submit_answers():
-    answers = request.json
-    # Call Gemini API to generate response
-    gemini_response = generate_gemini_response(answers)
-    # Extract tags from the first line of Gemini response
-    first_line, md_content = gemini_response.split('\n', 1)
-    tags = first_line.strip()
-    # Save tags to Supabase
-    save_tags_to_supabase(answers['user_id'], tags)
-    # Return the formatted markdown content
-    return jsonify({"markdown": md_content})
 
-def generate_gemini_response(answers):
-    prompt = generate_gemini_prompt(answers)
-    model = genai.GenerativeModel('gemini-1.0-pro')
-    response = model.generate_content(prompt)
-    return response.text
+# @app.route('/submit_answers', methods=['POST'])
+# def submit_answers():
+#     answers = request.json
+#     # Call Gemini API to generate response
+#     gemini_response = generate_gemini_response(answers)
+#     # Extract tags from the first line of Gemini response
+#     first_line, md_content = gemini_response.split('\n', 1)
+#     tags = first_line.strip()
+#     # Save tags to Supabase
+#     save_tags_to_supabase(answers['user_id'], tags)
+#     # Return the formatted markdown content
+#     return jsonify({"markdown": md_content})
 
-def generate_gemini_prompt(answers):
-    prompt = """
-    You are an expert doctor specializing in breast cancer treatment. Below are the question answers based on a patient's pathology report. Explain the available treatment options and why these treatment options would be effective. Your response should be beautifully formatted using markdown (md) and should be in simple, easy-to-understand English. Additionally, provide the most relevant tags from the list below, categorized under different types. The tags should be comma-separated and placed on the first line of your answer.
+# def generate_gemini_response(answers):
+#     prompt = generate_gemini_prompt(answers)
+#     model = genai.GenerativeModel('gemini-1.0-pro')
+#     response = model.generate_content(prompt)
+#     return response.text
 
-    > Demographic Tags
-    - Age Group
-      - 20s
-      - 30s
-      - 40s
-      - 50s
-      - 60s
-      - 70+
-    > Medical Status Tags
-    - Stages of Cancer
-      - Stage 0
-      - Stage I
-      - Stage II
-      - Stage III
-      - Stage IV
-    - Menopause Status
-      - Pre-menopausal
-      - Peri-menopausal
-      - Post-menopausal
-    - Genetic Factors
-      - BRCA1
-      - BRCA2
-      - HER2-positive
-    - Cancer Type
-      - Ductal Carcinoma In Situ (DCIS)
-      - Invasive Ductal Carcinoma (IDC)
-      - Invasive Lobular Carcinoma (ILC)
-      - Triple-Negative Breast Cancer (TNBC)
-    > Treatment Tags
-    - Treatment Type
-      - Surgery
-      - Chemotherapy
-      - Radiation Therapy
-      - Hormone Therapy
-      - Targeted Therapy
-      - Immunotherapy
-    """
-    return prompt
+# def generate_gemini_prompt(answers):
+#     prompt = """
+#     You are an expert doctor specializing in breast cancer treatment. Below are the question answers based on a patient's pathology report. Explain the available treatment options and why these treatment options would be effective. Your response should be beautifully formatted using markdown (md) and should be in simple, easy-to-understand English. Additionally, provide the most relevant tags from the list below, categorized under different types. The tags should be comma-separated and placed on the first line of your answer.
 
-def save_tags_to_supabase(user_id, tags):
-    supabase.table('survey').update({"tags": tags}).eq("user_id", user_id).execute()
+#     > Demographic Tags
+#     - Age Group
+#       - 20s
+#       - 30s
+#       - 40s
+#       - 50s
+#       - 60s
+#       - 70+
+#     > Medical Status Tags
+#     - Stages of Cancer
+#       - Stage 0
+#       - Stage I
+#       - Stage II
+#       - Stage III
+#       - Stage IV
+#     - Menopause Status
+#       - Pre-menopausal
+#       - Peri-menopausal
+#       - Post-menopausal
+#     - Genetic Factors
+#       - BRCA1
+#       - BRCA2
+#       - HER2-positive
+#     - Cancer Type
+#       - Ductal Carcinoma In Situ (DCIS)
+#       - Invasive Ductal Carcinoma (IDC)
+#       - Invasive Lobular Carcinoma (ILC)
+#       - Triple-Negative Breast Cancer (TNBC)
+#     > Treatment Tags
+#     - Treatment Type
+#       - Surgery
+#       - Chemotherapy
+#       - Radiation Therapy
+#       - Hormone Therapy
+#       - Targeted Therapy
+#       - Immunotherapy
+#     """
+#     return prompt
+
+# def save_tags_to_supabase(user_id, tags):
+#     supabase.table('survey').update({"tags": tags}).eq("user_id", request.args.get('user_id')).execute()
 
 if __name__ == '__main__':
     app.run(debug=True)
